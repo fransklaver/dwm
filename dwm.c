@@ -127,6 +127,7 @@ struct Monitor {
 	int showbar;
 	int topbar;
 	ClientList *cl;
+	Client *prevsel;
 	Client *sel;
 	Monitor *next;
 	Window barwin;
@@ -214,6 +215,7 @@ static void seturgent(Client *c, int urg);
 static void showhide(Client *c);
 static void sigchld(int unused);
 static void spawn(const Arg *arg);
+static void swapfocus();
 static void tag(const Arg *arg);
 static void tagmon(const Arg *arg);
 static void tile(Monitor *);
@@ -1787,6 +1789,17 @@ spawn(const Arg *arg)
 	}
 }
 
+void swapfocus()
+{
+	Client *c;
+
+	for (c = selmon->cl->clients; c && c != selmon->prevsel; c = c->next);
+	if (c == selmon->prevsel) {
+		focus(selmon->prevsel);
+		restack(selmon);
+	}
+}
+
 void
 tag(const Arg *arg)
 {
@@ -1915,6 +1928,7 @@ unfocus(Client *c, int setfocus)
 {
 	if (!c)
 		return;
+	c->mon->prevsel = c;
 	grabbuttons(c, 0);
 	XSetWindowBorder(dpy, c->win, scheme[SchemeNorm][ColBorder].pixel);
 	if (setfocus) {
@@ -2301,12 +2315,13 @@ void
 zoom(const Arg *arg)
 {
 	Client *c = selmon->sel;
+	selmon->prevsel = nexttiled(selmon->cl->clients, selmon);
 
 	if (!selmon->lt[selmon->sellt]->arrange
 	|| (selmon->sel && selmon->sel->isfloating))
 		return;
 	if (c == nexttiled(selmon->cl->clients, selmon))
-		if (!c || !(c = nexttiled(c->next, selmon)))
+		if (!c || !(c = selmon->prevsel = nexttiled(c->next, selmon)))
 			return;
 	pop(c);
 }
