@@ -416,6 +416,20 @@ attach(Client *c)
 }
 
 void
+attachabove(Client *c)
+{
+	if (!c->mon->sel || c->mon->sel == c->mon->cl->clients || c->mon->sel->isfloating) {
+		attach(c);
+		return;
+	}
+
+	Client *at;
+	for (at = c->mon->cl->clients; at->next != c->mon->sel; at = at->next);
+	c->next = at->next;
+	at->next = c;
+}
+
+void
 attachclients(Monitor *m) {
 	/* attach clients to the specified monitor */
 	Monitor *tm;
@@ -1182,7 +1196,7 @@ manage(Window w, XWindowAttributes *wa)
 		c->isfloating = c->oldstate = trans != None || c->isfixed;
 	if (c->isfloating)
 		XRaiseWindow(dpy, c->win);
-	attach(c);
+	attachabove(c);
 	attachstack(c);
 	XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32, PropModeAppend,
 		(unsigned char *) &(c->win), 1);
