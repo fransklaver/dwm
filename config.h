@@ -64,6 +64,15 @@ static const char *termcmd[]  = { "urxvt", NULL };
 static const char *lockcmd[]  = { "slock", NULL };
 static const char *quitcmd[]  = { "killall", "run_dwm", NULL };
 
+static void
+setvolume(const Arg *arg)
+{
+	const char *setvolume[] = { "amixer", "-c", "1", "set", "Master", arg->v, NULL };
+	Arg spawnarg = { .v = setvolume };
+
+	spawn(&spawnarg);
+}
+
 static Key keys[] = {
 	/* modifier                     key        function        argument */
 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
@@ -97,6 +106,10 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,             XK_j,      movestack,      {.i = +1 } },
 	{ MODKEY|ShiftMask,             XK_k,      movestack,      {.i = -1 } },
 	{ MODKEY,                       XK_s,      swapfocus,      {0} },
+	{ MODKEY,                       XK_Up,     setvolume,      {.v = "2+"  } },
+	{ MODKEY|ShiftMask,             XK_Up,     setvolume,      {.v = "10+" } },
+	{ MODKEY,                       XK_Down,   setvolume,      {.v = "2-"  } },
+	{ MODKEY|ShiftMask,             XK_Down,   setvolume,      {.v = "10-" } },
 	TAGKEYS(                        XK_F1,                      0)
 	TAGKEYS(                        XK_F2,                      1)
 	TAGKEYS(                        XK_F3,                      2)
